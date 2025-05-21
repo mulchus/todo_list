@@ -1,12 +1,14 @@
-from rest_framework import viewsets
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.response import Response
+
 from .models import Task, Category
 from .serializers import TaskSerializer, CategorySerializer
 
 
-class TaskViewSet(viewsets.ModelViewSet):
+class TaskViewSet(ModelViewSet):
    queryset = Task.objects.all()
    serializer_class = TaskSerializer
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(ModelViewSet):
    queryset = Category.objects.all()
    serializer_class = CategorySerializer

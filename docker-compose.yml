@@ -76,6 +76,18 @@ services:
       - postgres
       - redis
 
+  telegram-bot:
+    image: todo-telegram-bot:latest
+    build:
+      context: ./telegram_bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - API_AUTH_TOKEN=${API_AUTH_TOKEN}
+    depends_on:
+      - django
+    volumes:
+      - ./telegram_bot:/app
+
   nginx:
     image: nginx:1.23.3
     ports:

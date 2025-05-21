@@ -1,0 +1,82 @@
+x-django-service-environment: &django-service-environment
+  SITE_ROOT_URL: http://127.0.0.1:8000
+  POSTGRES_DSN: postgres://todo:todo@postgres:5432/todo
+  REDIS_RQ_DSN: redis://redis:6379/0
+  DJ_DEBUG: 'true'
+  DJ_SECRET_KEY: ')x0c@_&2&okn27=g&=nc&-fs)^&b(8eq0xnhlss+s2rf1e2icy'
+  GUNICORN_CMD_ARGS: '--reload --workers 1'
+  DJ_ALLOWED_HOSTS: '["127.0.0.1", "localhost", "django"]'
+  DJ_CSRF_TRUSTED_ORIGINS: '["http://127.0.0.1:8000"]'
+
+x-django-service-volumes: &django-service-volumes
+  volumes:
+    - ./django/src:/app/src/
+    - ./django/pyproject.toml:/app/pyproject.toml
+    - ./django/poetry.lock:/app/poetry.lock
+    - nginx_assets:/var/www/nginx_static
+    - nginx_media:/var/www/media
+
+
+services:
+
+  postgres:
+    image: postgres:14.8  # 14 is a minimal Postgres version supported by dev and prod installations
+    environment:
+      POSTGRES_PASSWORD: todo
+      POSTGRES_USER: todo
+      POSTGRES_DB: todo
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:4-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  celery:
+    image: todo-django:latest
+    command: celery -A todo_list worker --loglevel=info
+    environment:
+      <<: *django-service-environment
+    <<: *django-service-volumes
+    depends_on:
+      - redis
+      - postgres
+
+  celery-beat:
+    image: todo-django:latest
+    command: celery -A todo_list beat --loglevel=info
+    environment:
+      <<: *django-service-environment
+    <<: *django-service-volumes
+    depends_on:
+      - redis
+      - postgres
+
+  django:
+    image: todo-django:latest
+    build:
+      context: ./django
+    environment:
+      <<: *django-service-environment
+    <<: *django-service-volumes
+    depends_on:
+      - postgres
+      - redis
+
+  nginx:
+    image: nginx:1.23.3
+    ports:
+      - 127.0.0.1:8000:80
+    volumes:
+      - ./nginx-templates:/etc/nginx/templates/
+      - nginx_assets:/var/www/assets/
+      - nginx_media:/var/www/media/
+    depends_on:
+      django:
+        condition: service_started
+
+volumes:
+  db_data:
+  nginx_assets:
+  nginx_media:

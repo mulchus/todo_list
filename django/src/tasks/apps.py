@@ -12,6 +12,6 @@ class TasksConfig(AppConfig):
         current_app.conf.beat_schedule = {
             'send-task-reminders-every-second': {
                 'task': 'tasks.tasks.send_task_reminders',
-                'schedule': 1.0
+                'schedule': 60.0
             },
         }

@@ -28,8 +28,6 @@ class TaskViewSet(ModelViewSet):
 
         tasks = Task.objects.filter(user=user, completed=False).order_by('-due_date').select_related('category')
 
-        print(f'TASKS: {tasks}')
-
         return tasks
 
 

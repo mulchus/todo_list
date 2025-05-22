@@ -58,12 +58,12 @@ async def show_tasks(
 
     tasks = response.json()
     task_list = "\n".join(
-        [f"\n{task.get('title')}, (категория: {task.get('category__name')}, срок: {task.get('due_date')})"
+        [f"\n{task.get('title')}, (категория: {task.get('category_name')}, срок: {task.get('due_date')})"
          for task in tasks])
     await bot.delete_message(chat_id=event.message.chat.id, message_id=event.message.message_id)
     await bot.send_message(
         dialog_manager.event.from_user.id,
-        f"Задачи '{task_list}'"
+        f"Задачи {task_list}'"
     )
 
 

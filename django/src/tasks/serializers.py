@@ -9,8 +9,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    category = CategorySerializer
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
 
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'due_date', 'completed', 'category', 'user']
+        fields = ['id', 'title', 'description', 'due_date', 'completed', 'category', 'category_name', 'user']

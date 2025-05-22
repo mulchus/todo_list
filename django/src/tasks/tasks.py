@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from celery import shared_task
 from django.contrib.sessions.backends import db
 from django.conf import settings
@@ -11,14 +13,13 @@ import requests
 def send_task_reminders():
     now = timezone.now()
     tasks = Task.objects.filter(due_date__lte=now, completed=False).select_related('user')
-    print(f'FILTERED TASKS {tasks}')
     for task in tasks:
-        print(f'REMINDER: The task "{task.title}" is due.', [task.user.email])
         with db.transaction.atomic():
             task.completed = True
             task.save()
-        message = (f"Напоминание о задаче:\n{task.title}\n!Описание: {task.description}\n"
-                   f"Категория: {task.category.name}\nСрок выполнения: {task.due_date}\n"
+        message = (f"Напоминание о задаче:\n{task.title}\nОписание: {task.description}\n"
+                   f"Категория: {task.category.name}\n"
+                   f"Срок выполнения: {datetime.strftime(task.due_date, '%d.%m.%Y %H:%M')}\n"
         )
         try:
             response = requests.get(

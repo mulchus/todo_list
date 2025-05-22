@@ -101,6 +101,14 @@ async def add_task(
         await dialog_manager.switch_to(SG.add_task_due_date)
         return
 
+    if datetime.strptime(due_date, "%d.%m.%Y %H:%M") <= datetime.now():
+        await bot.send_message(
+            dialog_manager.event.from_user.id,
+            f"Ошибка сохранения задачи: дата и время не могут быть меньше текущих."
+        )
+        await dialog_manager.switch_to(SG.add_task_due_date)
+        return
+
     title = data.get('task_title')
     category = data.get('task_category')
     description = data.get('task_description')
@@ -189,12 +197,11 @@ async def start(message: Message, dialog_manager: DialogManager):
 
 
 async def main():
-    print("Start telegram bot")
-    await dp.start_polling(bot)
-    print("Start quart bot")
-    await quart_app.run_task(host='0.0.0.0', port=5000)
-
-    print("Started bots")
+    print("Start bots")
+    await asyncio.gather(
+        quart_app.run_task(host='0.0.0.0', port=5000),
+        dp.start_polling(bot)
+    )
 
 
 if __name__ == "__main__":

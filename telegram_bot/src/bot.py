@@ -58,7 +58,8 @@ async def show_tasks(
 
     tasks = response.json()
     task_list = "\n".join(
-        [f"\n{task.get('title')}, (категория: {task.get('category_name')}, срок: {task.get('due_date')})"
+        [f"\n{task['title']}, (категория: {task['category_name']}, "
+         f"срок: {task['formatted_due_date']})"
          for task in tasks])
     await bot.delete_message(chat_id=event.message.chat.id, message_id=event.message.message_id)
     await bot.send_message(
@@ -76,7 +77,7 @@ async def add_task(
     due_date = data.get('task_due_date')
 
     try:
-        datetime.strptime(due_date, "%Y-%m-%d %H:%M")
+        datetime.strptime(due_date, "%d.%m.%Y %H:%M")
     except ValueError:
         await bot.send_message(
             dialog_manager.event.from_user.id,
@@ -143,14 +144,14 @@ dialog = Dialog(
     ),
     # TODO: перевести на выбор из календаря
     Window(
-        Const("Введите срок напоминания в формате YYYY-MM-DD HH:MM"),
+        Const("Введите дату и время напоминания в формате '01.02.2025 15:15'"),
         TextInput(id="task_due_date", on_success=add_task),
         Cancel(Const("Отмена")),
         state=SG.add_task_due_date,
     )
     # TODO: перевести на выбор из календаря
     # Window(
-    #     Const("Введите срок напоминания в формате YYYY-MM-DD HH:MM:"),
+    #     Const("Выберите дату и время напоминания:"),
     #     Calendar(id='task_due_date', on_click=add_task),
     #     Cancel(Const("Отмена")),
     #     state=SG.add_task_due_date,

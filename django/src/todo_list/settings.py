@@ -115,13 +115,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'tasks.TodoUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'ru-RU'
 
-TIME_ZONE = 'America/Adak'
+TIME_ZONE = 'Europe/Moscow'
+# TIME_ZONE = 'America/Adak'
 
 USE_I18N = True
 

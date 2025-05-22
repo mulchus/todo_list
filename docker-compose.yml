@@ -76,6 +76,19 @@ services:
       - postgres
       - redis
 
+  django-static-copyer:
+    environment:
+      <<: *django-service-environment
+    <<: *django-service-volumes
+    image: todo-django:latest
+    command:
+      - sh
+      - -c
+      - |
+        python3 manage.py collectstatic --noinput && \
+        echo 'Copying static' && \
+        cp -r /var/www/collected_static/. /var/www/nginx_static/
+
   telegram-bot:
     image: todo-telegram-bot:latest
     build:
@@ -83,10 +96,10 @@ services:
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - API_AUTH_TOKEN=${API_AUTH_TOKEN}
-    depends_on:
-      - django
     volumes:
       - ./telegram_bot:/app
+    depends_on:
+      - django
 
   nginx:
     image: nginx:1.23.3

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Task, Category
+from .models import Task, Category, TodoUser
 
 
 @admin.register(Task)
@@ -13,3 +13,9 @@ class TaskAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
+
+@admin.register(TodoUser)
+class TodoUserAdmin(admin.ModelAdmin):
+    list_display = ('tg_username', 'username', 'first_name', 'last_name', )
+    search_fields = ('tg_username', 'username', 'first_name', 'last_name', )

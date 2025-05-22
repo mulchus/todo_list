@@ -12,6 +12,9 @@ from aiogram_dialog.widgets.text import Const
 from aiogram_dialog.widgets.kbd import Back, Button, Cancel, Next, Row, Calendar
 from aiogram_dialog.widgets.input import TextInput
 
+from remainder import make_quart_app
+
+
 import os
 import asyncio
 import aiohttp  # TODO: перейти на aiohttp
@@ -26,6 +29,11 @@ API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN")
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
+quart_app = make_quart_app(bot)
+
+
+# def run_quart():
+#     quart_app.run(host='0.0.0.0', port=5000)
 
 
 class SG(StatesGroup):
@@ -47,6 +55,7 @@ async def show_tasks(
             DJANGO_API_URL,
             params={"tg_username": dialog_manager.event.from_user.username},
         )
+        response.raise_for_status()
     except Exception as e:
         await bot.send_message(
             dialog_manager.event.from_user.id,
@@ -62,10 +71,16 @@ async def show_tasks(
          f"срок: {task['formatted_due_date']})"
          for task in tasks])
     await bot.delete_message(chat_id=event.message.chat.id, message_id=event.message.message_id)
-    await bot.send_message(
-        dialog_manager.event.from_user.id,
-        f"Задачи {task_list}'"
-    )
+    if not task_list:
+        await bot.send_message(
+            dialog_manager.event.from_user.id,
+            "У вас нет задач.",
+        )
+    else:
+        await bot.send_message(
+            dialog_manager.event.from_user.id,
+            f"Задачи: {task_list}"
+        )
 
 
 async def add_task(
@@ -91,7 +106,7 @@ async def add_task(
     description = data.get('task_description')
 
     try:
-        requests.post(
+        response = requests.post(
             DJANGO_API_URL,
             json={
                 "title": title,
@@ -99,8 +114,12 @@ async def add_task(
                 "category": category,
                 "due_date": due_date,
                 "tg_username": dialog_manager.event.from_user.username,
+                "tg_id": dialog_manager.event.from_user.id,
+                "last_name": dialog_manager.event.from_user.last_name,
+                "first_name": dialog_manager.event.from_user.first_name,
             },
         )
+        response.raise_for_status()
     except Exception as e:
         await bot.send_message(
             dialog_manager.event.from_user.id,
@@ -169,6 +188,14 @@ async def start(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(SG.main_menu, mode=StartMode.RESET_STACK)
 
 
-if __name__ == "__main__":
+async def main():
     print("Start telegram bot")
-    asyncio.run(dp.start_polling(bot))
+    await dp.start_polling(bot)
+    print("Start quart bot")
+    await quart_app.run_task(host='0.0.0.0', port=5000)
+
+    print("Started bots")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

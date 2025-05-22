@@ -23,6 +23,13 @@ class TodoUser(AbstractUser):
         null=True,
         verbose_name='Telegram username',
     )
+    tg_id = models.CharField(
+        unique=True,
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name='Telegram ID',
+    )
 
     def __str__(self):
         return f"{self.username} {self.tg_username}"''

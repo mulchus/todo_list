@@ -26,6 +26,9 @@ class EnvSettings(BaseSettings):
 
     POSTGRES_DSN: PostgresDsn
 
+    TELEBOT_API_URL: AnyHttpUrlString = 'http://telegram-bot:5000//api/notify'
+    """Web application URL to send message to reminder bot. E.g. http://telegram-bot:5000/."""
+
     SITE_ROOT_URL: AnyHttpUrlString
     """Web application URL to access from frontend. E.g. http://127.0.0.1:8000/ ."""
 

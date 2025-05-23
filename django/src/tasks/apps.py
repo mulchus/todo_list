@@ -10,7 +10,7 @@ class TasksConfig(AppConfig):
     @staticmethod
     def ready():
         current_app.conf.beat_schedule = {
-            'send-task-reminders-every-second': {
+            'send-task-reminders': {
                 'task': 'tasks.tasks.send_task_reminders',
                 'schedule': 60.0
             },

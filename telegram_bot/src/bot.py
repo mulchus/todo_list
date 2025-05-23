@@ -9,31 +9,24 @@ from aiogram.filters.state import StatesGroup, State
 
 from aiogram_dialog import Dialog, DialogManager, setup_dialogs, StartMode, Window
 from aiogram_dialog.widgets.text import Const
-from aiogram_dialog.widgets.kbd import Back, Button, Cancel, Next, Row, Calendar
+from aiogram_dialog.widgets.kbd import Button, Cancel, Next, Row, Calendar
 from aiogram_dialog.widgets.input import TextInput
 
 from remainder import make_quart_app
 
-
 import os
 import asyncio
-import aiohttp  # TODO: перейти на aiohttp
-import requests
+import httpx
 
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 DJANGO_API_URL = os.getenv('DJANGO_API_URL', 'http://django/api/tasks/')
-API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN")
 
 
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 quart_app = make_quart_app(bot)
-
-
-# def run_quart():
-#     quart_app.run(host='0.0.0.0', port=5000)
 
 
 class SG(StatesGroup):
@@ -51,12 +44,13 @@ async def show_tasks(
         **kwargs,
 ):
     try:
-        response = requests.get(
-            DJANGO_API_URL,
-            params={"tg_username": dialog_manager.event.from_user.username},
-        )
-        response.raise_for_status()
-    except Exception as e:
+        with httpx.Client() as client:
+            response = client.get(
+                DJANGO_API_URL,
+                params={"tg_username": dialog_manager.event.from_user.username},
+            )
+            response.raise_for_status()
+    except httpx.HTTPError as e:
         await bot.send_message(
             dialog_manager.event.from_user.id,
             f"Ошибка получения задач: {e}"
@@ -74,7 +68,7 @@ async def show_tasks(
     if not task_list:
         await bot.send_message(
             dialog_manager.event.from_user.id,
-            "У вас нет задач.",
+            "У вас нет незавершенных задач.",
         )
     else:
         await bot.send_message(
@@ -114,21 +108,22 @@ async def add_task(
     description = data.get('task_description')
 
     try:
-        response = requests.post(
-            DJANGO_API_URL,
-            json={
-                "title": title,
-                "description": description,
-                "category": category,
-                "due_date": due_date,
-                "tg_username": dialog_manager.event.from_user.username,
-                "tg_id": dialog_manager.event.from_user.id,
-                "last_name": dialog_manager.event.from_user.last_name,
-                "first_name": dialog_manager.event.from_user.first_name,
-            },
-        )
-        response.raise_for_status()
-    except Exception as e:
+        with httpx.Client() as client:
+            response = client.post(
+                DJANGO_API_URL,
+                json={
+                    "title": title,
+                    "description": description,
+                    "category": category,
+                    "due_date": due_date,
+                    "tg_username": dialog_manager.event.from_user.username,
+                    "tg_id": dialog_manager.event.from_user.id,
+                    "last_name": dialog_manager.event.from_user.last_name,
+                    "first_name": dialog_manager.event.from_user.first_name,
+                },
+            )
+            response.raise_for_status()
+    except httpx.HTTPError as e:
         await bot.send_message(
             dialog_manager.event.from_user.id,
             f"Ошибка сохранения задачи: {e}"

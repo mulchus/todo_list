@@ -33,7 +33,6 @@ class TaskViewSet(ModelViewSet):
 
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
         user, _ = TodoUser.objects.get_or_create(
             tg_username=request.data.get('tg_username'),
             defaults={

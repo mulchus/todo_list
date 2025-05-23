@@ -7,11 +7,11 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-requests = "2.31.0"
 Django = "^5.2"
 django-cors-headers = "3.7.0"
 gunicorn = "==21.*"
 djangorestframework = "^3.16"
+httpx = "^0.28"
 pydantic = "^2.9.2"
 pydantic-settings = "^2.5.2"
 pytz = "2025.2"
@@ -19,7 +19,6 @@ tzdata = "^2025.2"
 celery = "^5.5.2"
 redis = "^6.1.0"
 flower = "^2.0.1"
-
 
 [build-system]
 requires = ["poetry-core"]

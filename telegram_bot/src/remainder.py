@@ -4,11 +4,7 @@ def make_quart_app(bot):
 
     quart_app = Quart(__name__)
 
-    @quart_app.route('/')
-    async def index():
-        return jsonify({'message': 'Hello from Flask!'})
-
-    @quart_app.route('/api/notify', methods=['GET'])
+    @quart_app.route('/api/notify', methods=['POST'])
     async def notify_about_task():
         data = await request.json
         message = data.get('message', 'No message provided')

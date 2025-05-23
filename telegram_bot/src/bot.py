@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from aiogram.filters import Command
@@ -40,7 +40,7 @@ class SG(StatesGroup):
 
 
 async def show_tasks(
-        event: Message, widget, dialog_manager: DialogManager,
+        event: CallbackQuery, butto: Button, dialog_manager: DialogManager,
         **kwargs,
 ):
     try:
@@ -56,7 +56,7 @@ async def show_tasks(
             f"Ошибка получения задач: {e}"
         )
         await bot.delete_message(chat_id=event.message.chat.id, message_id=event.message.message_id)
-        await dialog_manager.start(SG.main_menu)
+        await dialog_manager.switch_to(SG.main_menu)
         return
 
     tasks = response.json()
@@ -140,35 +140,40 @@ async def add_task(
     await dialog_manager.start(SG.main_menu)
 
 
+@dp.message(Command("start"))
+async def start(
+        message: Message, dialog_manager: DialogManager
+):
+    # Important: always set `mode=StartMode.RESET_STACK` you don't want to stack dialogs
+    await dialog_manager.start(SG.main_menu, mode=StartMode.RESET_STACK)
+
+
 dialog = Dialog(
-    Window(Const("Главное меню"),
-           Row(Button(Const("Показать задачи"), id="show_tasks", on_click=show_tasks),
+    Window(
+        Const("Главное меню"),
+           Row(Button(Const("Показать текущие задачи"), id="show_tasks", on_click=show_tasks),
                Button(Const("Добавить задачу"), id="add_task", on_click=Next())),
            state=SG.main_menu,
            ),
     Window(
         Const("Добавление новой задачи\n\nВведите название задачи:"),
         TextInput(id="task_title", on_success=Next()),
-        Cancel(Const("Отмена")),
         state=SG.add_task_title,
     ),
     Window(
         Const("Введите описание задачи:"),
         TextInput(id="task_description", on_success=Next()),
-        Cancel(Const("Отмена")),
         state=SG.add_task_description,
     ),
     Window(
         Const("Введите категорию задачи:"),
         TextInput(id="task_category", on_success=Next()),
-        Cancel(Const("Отмена")),
         state=SG.add_task_category,
     ),
     # TODO: перевести на выбор из календаря
     Window(
         Const("Введите дату и время напоминания в формате '01.02.2025 15:15'"),
         TextInput(id="task_due_date", on_success=add_task),
-        Cancel(Const("Отмена")),
         state=SG.add_task_due_date,
     )
     # TODO: перевести на выбор из календаря
@@ -183,12 +188,6 @@ dialog = Dialog(
 
 dp.include_router(dialog)
 setup_dialogs(dp)
-
-
-@dp.message(Command("start"))
-async def start(message: Message, dialog_manager: DialogManager):
-    # Important: always set `mode=StartMode.RESET_STACK` you don't want to stack dialogs
-    await dialog_manager.start(SG.main_menu, mode=StartMode.RESET_STACK)
 
 
 async def main():

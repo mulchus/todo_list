@@ -122,8 +122,7 @@ AUTH_USER_MODEL = 'tasks.TodoUser'
 
 LANGUAGE_CODE = 'ru-RU'
 
-TIME_ZONE = 'Europe/Moscow'
-# TIME_ZONE = 'America/Adak'
+TIME_ZONE = 'America/Adak'
 
 USE_I18N = True
 

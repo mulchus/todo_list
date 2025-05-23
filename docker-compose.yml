@@ -95,7 +95,6 @@ services:
       context: ./telegram_bot
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - API_AUTH_TOKEN=${API_AUTH_TOKEN}
     volumes:
       - ./telegram_bot:/app
     depends_on:
